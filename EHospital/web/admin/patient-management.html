@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Quản lý Bệnh nhân - EHospital</title>
+        <style>
+            body {
+                font-family: "Segoe UI", sans-serif;
+                margin: 40px;
+                background-color: #f5f9fc;
+            }
+            h1 {
+                text-align: center;
+                color: #2d6a4f;
+            }
+            .filter-box {
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+            .filter-controls {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            input,
+            select {
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background-color: white;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            }
+            th,
+            td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+            }
+            th {
+                background-color: #2d6a4f;
+                color: white;
+            }
+            .btn {
+                padding: 6px 12px;
+                background-color: #40916c;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                margin-right: 5px;
+            }
+            .pagination {
+                margin-top: 15px;
+                text-align: center;
+            }
+            .pagination button {
+                margin: 0 5px;
+                padding: 6px 10px;
+                border: 1px solid #ccc;
+                background-color: white;
+                cursor: pointer;
+            }
+            .pagination .active {
+                background-color: #40916c;
+                color: white;
+            }
+            .btn:hover { background-color: #1b4332; }
+            .btn-primary { background-color: #007bff; padding: 10px 20px; font-size: 16px; }
+            .btn-primary:hover { background-color: #0056b3; }
+            .status-active { color: #28a745; font-weight: bold; }
+            .status-inactive { color: #dc3545; font-weight: bold; }
+            .modal { display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%);
+                     background: white; padding: 30px; border-radius: 10px; box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+                     z-index: 1000; max-width: 800px; width: 90%; max-height: 90vh; overflow-y: auto; }
+            #overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+                       background: rgba(0,0,0,0.4); z-index: 999; }
+            .form-group { margin-bottom: 15px; }
+            .form-group label { display: block; margin-bottom: 5px; font-weight: bold; color: #333; }
+            .form-group input, .form-group select, .form-group textarea {
+                width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 5px; font-size: 14px; box-sizing: border-box;
+            }
+            .form-row { display: flex; gap: 15px; }
+            .form-row .form-group { flex: 1; }
+            .modal-actions { margin-top: 20px; display: flex; gap: 10px; justify-content: flex-end; }
+            .error { color: #dc3545; font-size: 12px; margin-top: 5px; }
+            .loading { display: none; text-align: center; padding: 20px; }
+            .spinner { border: 3px solid #f3f3f3; border-top: 3px solid #40916c; border-radius: 50%; width: 30px; height: 30px;
+                       animation: spin 1s linear infinite; margin: 0 auto 10px; }
+            @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        </style>
+    </head>
+    <body>
+        <h1>Danh sách Bệnh nhân</h1>
+        <div class="filter-box">
+            <div class="filter-controls">
+                <input type="text" id="searchInput" placeholder="Tìm theo tên, email, mã bệnh nhân..." />
+                <select id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Hoạt động</option>
+                    <option value="false">Không hoạt động</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="showAddPatientModal()">+ Thêm Bệnh nhân Mới</button>
+        </div>
+
+        <table id="patientTable">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Mã bệnh nhân</th>
+                    <th>Giới tính</th>
+                    <th>Ngày sinh</th>
+                    <th>Email</th>
+                    <th>Điện thoại</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+        <div class="pagination" id="pagination"></div>
+
+        <div id="overlay"></div>
+        <div id="detailModal" class="modal">
+            <h3>Chi tiết Bệnh nhân</h3>
+            <div id="detailContent"></div>
+            <div class="modal-actions">
+                <button class="btn btn-warning" onclick="enableEditInModal()">Sửa</button>
+                <button class="btn btn-success" id="saveBtn" onclick="saveEditFromModal()" style="display:none">Lưu</button>
+                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+            </div>
+        </div>
+
+        <div id="addPatientModal" class="modal">
+            <h3>Thêm Bệnh nhân Mới</h3>
+            <div class="loading" id="addPatientLoading">
+                <div class="spinner"></div>
+                <p>Đang thêm bệnh nhân...</p>
+            </div>
+            <form id="addPatientForm">
+                <div class="form-row">
+                    <div class="form-group"><label for="username">Tên đăng nhập *</label><input type="text" id="username" name="username" required /><div class="error" id="usernameError"></div></div>
+                    <div class="form-group"><label for="password">Mật khẩu *</label><input type="password" id="password" name="password" required /><div class="error" id="passwordError"></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="fullName">Họ và tên *</label><input type="text" id="fullName" name="fullName" required /><div class="error" id="fullNameError"></div></div>
+                    <div class="form-group"><label for="email">Email *</label><input type="email" id="email" name="email" required /><div class="error" id="emailError"></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="phone">Điện thoại *</label><input type="tel" id="phone" name="phone" required /><div class="error" id="phoneError"></div></div>
+                    <div class="form-group"><label for="gender">Giới tính *</label><select id="gender" name="gender" required><option value="">Chọn giới tính</option><option value="Male">Nam</option><option value="Female">Nữ</option></select><div class="error" id="genderError"></div></div>
+                </div>
+                <div class="form-row">
+                    <div class="form-group"><label for="dateOfBirth">Ngày sinh *</label><input type="date" id="dateOfBirth" name="dateOfBirth" required /><div class="error" id="dateOfBirthError"></div></div>
+                    <div class="form-group"><label for="patientCode">Mã bệnh nhân</label><input type="text" id="patientCode" name="patientCode" readonly placeholder="Tự sinh" /></div>
+                </div>
+                <div class="form-group"><label for="bloodType">Nhóm máu *</label><input type="text" id="bloodType" name="bloodType" required /><div class="error" id="bloodTypeError"></div></div>
+                <div class="form-group"><label for="allergies">Dị ứng</label><textarea id="allergies" name="allergies"></textarea></div>
+                <div class="form-group"><label for="chronicDiseases">Bệnh nền</label><textarea id="chronicDiseases" name="chronicDiseases"></textarea></div>
+                <div class="form-row">
+                    <div class="form-group"><label for="emergencyContact">Người liên hệ khẩn cấp *</label><input type="text" id="emergencyContact" name="emergencyContact" required /><div class="error" id="emergencyContactError"></div></div>
+                    <div class="form-group"><label for="emergencyPhone">SĐT khẩn cấp *</label><input type="tel" id="emergencyPhone" name="emergencyPhone" required /><div class="error" id="emergencyPhoneError"></div></div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-secondary" onclick="closeAddPatientModal()">Hủy</button>
+                    <button type="submit" class="btn btn-success">Thêm Bệnh nhân</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            let patients = [], selectedPatient = null, editingInModal=false;
+            let currentPage =1, rowsPerPage=5;
+            let editingUserId=null;
+            const API = "http://localhost:9999/EHospital/patient-api";
+
+            async function fetchData(){
+                try{
+                    const res = await fetch(API);
+                    if(!res.ok) throw new Error();
+                    const json = await res.json();
+                    if(json.success){ patients = json.data; renderTable(); }
+                }catch(e){ alert("Không thể tải dữ liệu"); }
+            }
+
+            function renderTable(){
+                const tbody = document.querySelector('#patientTable tbody'); tbody.innerHTML='';
+                const search = document.getElementById('searchInput').value.toLowerCase();
+                const status = document.getElementById('statusFilter').value;
+                const filtered = patients.filter(p=>{
+                    const matchSearch = p.fullName.toLowerCase().includes(search)
+                        || p.email.toLowerCase().includes(search)
+                        || (p.patient.patientCode||'').toLowerCase().includes(search);
+                    const matchStatus = status===''?true: p.isActive.toString()===status;
+                    return matchSearch && matchStatus;
+                });
+                const start=(currentPage-1)*rowsPerPage, end=start+rowsPerPage;
+                filtered.slice(start,end).forEach(p=>{
+                    const tr=document.createElement('tr');
+                    tr.innerHTML = `<td>${p.fullName}</td>`+
+                        `<td>${p.patient.patientCode||''}</td>`+
+                        `<td>${p.patient.gender||''}</td>`+
+                        `<td>${formatDate(p.patient.dateOfBirth)}</td>`+
+                        `<td>${p.email}</td>`+
+                        `<td>${p.phone}</td>`+
+                        `<td><span class="${p.isActive?'status-active':'status-inactive'}">${p.isActive?'Hoạt động':'Không hoạt động'}</span></td>`+
+                        `<td><button class="btn btn-sm" onclick="showDetails(${p.userId})">Xem</button></td>`;
+                    tbody.appendChild(tr);
+                }); renderPagination(filtered.length);
+            }
+            function formatDate(str){ if(!str) return ''; const d=new Date(str); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`; }
+            function renderPagination(total){ const totalPages=Math.ceil(total/rowsPerPage);
+                const pg=document.getElementById('pagination'); pg.innerHTML='';
+                for(let i=1;i<=totalPages;i++){ const btn=document.createElement('button'); btn.textContent=i;
+                    if(i===currentPage) btn.classList.add('active'); btn.onclick=()=>{currentPage=i; renderTable();}; pg.appendChild(btn);
+                }
+            }
+            function showDetails(id){ selectedPatient=patients.find(p=>p.userId===id); if(!selectedPatient) return;
+                editingInModal=false; renderDetail(); showModal('detailModal'); }
+            function renderDetail(){ const p=selectedPatient; const format=val=>formatDate(val);
+                const inputOrText=(label,val,id,type='text')=> editingInModal?
+                    `<div class="form-group"><label>${label}</label><input type="${type}" id="${id}" value="${type==='date'?format(val):val||''}" /></div>`:
+                    `<div class="detail-row"><strong>${label}:</strong> ${type==='date'?format(val):val||''}</div>`;
+                document.getElementById('detailContent').innerHTML =
+                    inputOrText('Họ tên',p.fullName,'editFullName')+
+                    inputOrText('Mã bệnh nhân',p.patient.patientCode,'','text')+
+                    inputOrText('Email',p.email,'editEmail','email')+
+                    inputOrText('Điện thoại',p.phone,'editPhone','tel')+
+                    inputOrText('Giới tính',p.patient.gender,'editGender')+
+                    inputOrText('Ngày sinh',p.patient.dateOfBirth,'editDOB','date')+
+                    inputOrText('Nhóm máu',p.patient.bloodType,'editBlood')+
+                    inputOrText('Dị ứng',p.patient.allergies,'editAllergies')+
+                    inputOrText('Bệnh nền',p.patient.chronicDiseases,'editChronic')+
+                    inputOrText('Người liên hệ',p.patient.emergencyContact,'editEmergContact')+
+                    inputOrText('SĐT khẩn cấp',p.patient.emergencyPhone,'editEmergPhone');
+            }
+            function enableEditInModal(){ editingInModal=true; document.getElementById('saveBtn').style.display='inline-block'; renderDetail(); }
+            function validateModal(){ return true;} // thêm validate nếu cần
+            async function saveEditFromModal(){ if(!selectedPatient||!validateModal()) return;
+                const getv=id=>document.getElementById(id)?.value.trim()||'';
+                selectedPatient.fullName=getv('editFullName'); selectedPatient.email=getv('editEmail');
+                selectedPatient.phone=getv('editPhone'); selectedPatient.patient.gender=getv('editGender');
+                selectedPatient.patient.dateOfBirth=getv('editDOB'); selectedPatient.patient.bloodType=getv('editBlood');
+                selectedPatient.patient.allergies=getv('editAllergies'); selectedPatient.patient.chronicDiseases=getv('editChronic');
+                selectedPatient.patient.emergencyContact=getv('editEmergContact'); selectedPatient.patient.emergencyPhone=getv('editEmergPhone');
+                try{ const res=await fetch(API,{method:'PUT',headers:{'Content-Type':'application/json'},body:JSON.stringify(selectedPatient)});
+                    const j=await res.json(); if(res.ok&&j.success){ alert('Cập nhật thành công'); closeModal(); fetchData(); }
+                }catch(e){ alert('Lỗi'); }
+            }
+            function showModal(id){ document.getElementById('overlay').style.display='block'; document.getElementById(id).style.display='block'; }
+            function closeModal(){ document.getElementById('overlay').style.display='none'; document.getElementById('detailModal').style.display='none'; }
+            function showAddPatientModal(){ document.getElementById('addPatientForm').reset(); showModal('addPatientModal'); }
+            function closeAddPatientModal(){ document.getElementById('overlay').style.display='none'; document.getElementById('addPatientModal').style.display='none'; }
+            function clearErrors(){document.querySelectorAll('.error').forEach(e=>e.textContent='');}
+            function showError(id,msg){ document.getElementById(id+'Error').textContent=msg; }
+            function validateForm(data){ clearErrors(); let ok=true;
+                ['username','password','fullName','email','phone','gender','dateOfBirth','emergencyContact','emergencyPhone'].forEach(f=>{ if(!data[f]||!data[f].trim()){ showError(f,'Bắt buộc'); ok=false;} }); return ok; }
+            async function submitAddPatient(data){ const payload={...data, patient:{ gender:data.gender, dateOfBirth:data.dateOfBirth, address:data.address||'', patientCode:'', bloodType:data.bloodType, allergies:data.allergies||'', chronicDiseases:data.chronicDiseases||'', emergencyContact:data.emergencyContact, emergencyPhone:data.emergencyPhone, insuranceNumber:data.insuranceNumber||'' }, roleId:3, isActive:true };
+                try{ const res=await fetch(API,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+                    const j=await res.json(); if(res.ok&&j.success){ alert('Thêm thành công'); closeAddPatientModal(); fetchData(); }
+                }catch(e){ alert('Lỗi'); }
+            }
+            document.getElementById('addPatientForm').addEventListener('submit',async e=>{ e.preventDefault(); const fm=new FormData(e.target), data=Object.fromEntries(fm.entries()); if(validateForm(data)){ document.getElementById('addPatientLoading').style.display='block'; e.target.style.display='none'; await submitAddPatient(data); document.getElementById('addPatientLoading').style.display='none'; e.target.style.display='block'; }});
+            document.getElementById('overlay').addEventListener('click',()=>{ closeModal(); closeAddPatientModal(); });
+            document.getElementById('searchInput').addEventListener('input',()=>{ currentPage=1; renderTable(); });
+            document.getElementById('statusFilter').addEventListener('change',()=>{ currentPage=1; renderTable(); });
+            fetchData();
+        </script>
+    </body>
+</html>

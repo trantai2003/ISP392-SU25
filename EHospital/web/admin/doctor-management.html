@@ -1,0 +1,1333 @@
+<!DOCTYPE html>
+<html lang="vi">
+    <head>
+        <meta charset="UTF-8" />
+        <title>Quản lý Bác sĩ - EHospital</title>
+        <style>
+            body {
+                font-family: "Segoe UI", sans-serif;
+                margin: 40px;
+                background-color: #f5f9fc;
+            }
+            h1 {
+                text-align: center;
+                color: #2d6a4f;
+            }
+            .filter-box {
+                margin-bottom: 20px;
+                display: flex;
+                justify-content: space-between;
+                flex-wrap: wrap;
+                gap: 10px;
+                align-items: center;
+            }
+            .filter-controls {
+                display: flex;
+                gap: 10px;
+                flex-wrap: wrap;
+            }
+            input,
+            select {
+                padding: 8px;
+                border-radius: 6px;
+                border: 1px solid #ccc;
+            }
+            table {
+                width: 100%;
+                border-collapse: collapse;
+                background-color: white;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.05);
+            }
+            th,
+            td {
+                padding: 12px;
+                border-bottom: 1px solid #eee;
+                text-align: left;
+            }
+            th {
+                background-color: #2d6a4f;
+                color: white;
+            }
+            .btn {
+                padding: 6px 12px;
+                background-color: #40916c;
+                color: white;
+                border: none;
+                border-radius: 5px;
+                cursor: pointer;
+                font-size: 14px;
+                margin-right: 5px;
+            }
+            .btn:hover {
+                background-color: #1b4332;
+            }
+            .btn-primary {
+                background-color: #007bff;
+                padding: 10px 20px;
+                font-size: 16px;
+            }
+            .btn-primary:hover {
+                background-color: #0056b3;
+            }
+            .btn-success {
+                background-color: #28a745;
+            }
+            .btn-success:hover {
+                background-color: #1e7e34;
+            }
+            .btn-secondary {
+                background-color: #6c757d;
+            }
+            .btn-secondary:hover {
+                background-color: #545b62;
+            }
+            .btn-warning {
+                background-color: #ffc107;
+                color: #212529;
+            }
+            .btn-warning:hover {
+                background-color: #e0a800;
+            }
+            .btn-danger {
+                background-color: #dc3545;
+            }
+            .btn-danger:hover {
+                background-color: #c82333;
+            }
+            .btn-sm {
+                padding: 4px 8px;
+                font-size: 12px;
+            }
+            .status-active {
+                color: #28a745;
+                font-weight: bold;
+            }
+            .status-inactive {
+                color: #dc3545;
+                font-weight: bold;
+            }
+            .switch {
+                position: relative;
+                display: inline-block;
+                width: 60px;
+                height: 34px;
+            }
+            .switch input {
+                opacity: 0;
+                width: 0;
+                height: 0;
+            }
+            .slider {
+                position: absolute;
+                cursor: pointer;
+                top: 0;
+                left: 0;
+                right: 0;
+                bottom: 0;
+                background-color: #ccc;
+                transition: 0.4s;
+                border-radius: 34px;
+            }
+            .slider:before {
+                position: absolute;
+                content: "";
+                height: 26px;
+                width: 26px;
+                left: 4px;
+                bottom: 4px;
+                background-color: white;
+                transition: 0.4s;
+                border-radius: 50%;
+            }
+            input:checked + .slider {
+                background-color: #2196f3;
+            }
+            input:checked + .slider:before {
+                transform: translateX(26px);
+            }
+            .editing-row {
+                background-color: #fff3cd !important;
+            }
+            .edit-input {
+                width: 100%;
+                padding: 4px;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+            .edit-select {
+                width: 100%;
+                padding: 4px;
+                border: 1px solid #ddd;
+                border-radius: 3px;
+                font-size: 13px;
+            }
+            .pagination {
+                margin-top: 15px;
+                text-align: center;
+            }
+            .pagination button {
+                margin: 0 5px;
+                padding: 6px 10px;
+                border: 1px solid #ccc;
+                background-color: white;
+                cursor: pointer;
+            }
+            .pagination .active {
+                background-color: #40916c;
+                color: white;
+            }
+            .modal {
+                display: none;
+                position: fixed;
+                top: 50%;
+                left: 50%;
+                transform: translate(-50%, -50%);
+                background: white;
+                padding: 30px;
+                border-radius: 10px;
+                box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+                z-index: 1000;
+                max-width: 800px;
+                width: 90%;
+                max-height: 90vh;
+                overflow-y: auto;
+            }
+            .modal h3 {
+                margin-top: 0;
+                color: #2d6a4f;
+            }
+            #overlay {
+                display: none;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0, 0, 0, 0.4);
+                z-index: 999;
+            }
+            .detail-row {
+                margin-bottom: 10px;
+                padding: 5px 0;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            .form-group {
+                margin-bottom: 15px;
+            }
+            .form-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: bold;
+                color: #333;
+            }
+            .form-group input,
+            .form-group select,
+            .form-group textarea {
+                width: 100%;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                font-size: 14px;
+                box-sizing: border-box;
+            }
+            .form-group textarea {
+                height: 80px;
+                resize: vertical;
+            }
+            .form-row {
+                display: flex;
+                gap: 15px;
+            }
+            .form-row .form-group {
+                flex: 1;
+            }
+            .modal-actions {
+                margin-top: 20px;
+                display: flex;
+                gap: 10px;
+                justify-content: flex-end;
+            }
+            .error {
+                color: #dc3545;
+                font-size: 12px;
+                margin-top: 5px;
+            }
+            .loading {
+                display: none;
+                text-align: center;
+                padding: 20px;
+            }
+            .spinner {
+                border: 3px solid #f3f3f3;
+                border-top: 3px solid #40916c;
+                border-radius: 50%;
+                width: 30px;
+                height: 30px;
+                animation: spin 1s linear infinite;
+                margin: 0 auto 10px;
+            }
+            @keyframes spin {
+                0% {
+                    transform: rotate(0deg);
+                }
+                100% {
+                    transform: rotate(360deg);
+                }
+            }
+            .action-buttons {
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap;
+            }
+            .edit-error {
+                color: #dc3545;
+                font-size: 11px;
+                margin-top: 2px;
+                display: block;
+            }
+
+            .edit-input.error-field,
+            .edit-select.error-field {
+                border-color: #dc3545;
+                background-color: #fff5f5;
+            }
+        </style>
+    </head>
+    <body>
+        <h1>Danh sách Nhân viên y tế</h1>
+        <div class="filter-box">
+            <div class="filter-controls">
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Tìm theo tên, email..."
+                    />
+                <select id="departmentFilter">
+                    <option value="">Tất cả khoa</option>
+                </select>
+                <select id="statusFilter">
+                    <option value="">Tất cả trạng thái</option>
+                    <option value="true">Hoạt động</option>
+                    <option value="false">Không hoạt động</option>
+                </select>
+            </div>
+            <button class="btn btn-primary" onclick="showAddDoctorModal()">
+                + Thêm Bác sĩ Mới
+            </button>
+        </div>
+
+        <table id="doctorTable">
+            <thead>
+                <tr>
+                    <th>Họ tên</th>
+                    <th>Chức vụ</th>
+                    <th>Khoa</th>
+                    <th>Email</th>
+                    <th>SĐT</th>
+                    <th>Trạng thái</th>
+                    <th>Hành động</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+        </table>
+
+        <div class="pagination" id="pagination"></div>
+
+        <!-- Detail Modal -->
+        <div id="overlay"></div>
+        <div id="detailModal" class="modal">
+            <h3>Thông tin chi tiết bác sĩ</h3>
+            <div id="detailContent"></div>
+            <div class="modal-actions">
+                <button class="btn btn-warning" onclick="enableEditInModal()">
+                    Sửa
+                </button>
+                <button
+                    class="btn btn-success"
+                    id="saveBtn"
+                    onclick="saveEditFromModal()"
+                    style="display: none"
+                    >
+                    Lưu
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Đóng</button>
+            </div>
+        </div>
+
+        <!-- Add Doctor Modal -->
+        <div id="addDoctorModal" class="modal">
+            <h3>Thêm Bác sĩ Mới</h3>
+            <div class="loading" id="addDoctorLoading">
+                <div class="spinner"></div>
+                <p>Đang thêm bác sĩ...</p>
+            </div>
+            <form id="addDoctorForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="username">Tên đăng nhập *</label>
+                        <input type="text" id="username" name="username" required />
+                        <div class="error" id="usernameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="password">Mật khẩu *</label>
+                        <input type="password" id="password" name="password" required />
+                        <div class="error" id="passwordError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="fullName">Họ và tên *</label>
+                        <input type="text" id="fullName" name="fullName" required />
+                        <div class="error" id="fullNameError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="email">Email *</label>
+                        <input type="email" id="email" name="email" required />
+                        <div class="error" id="emailError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="phone">Số điện thoại *</label>
+                        <input type="tel" id="phone" name="phone" required />
+                        <div class="error" id="phoneError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="gender">Giới tính *</label>
+                        <select id="gender" name="gender" required>
+                            <option value="">Chọn giới tính</option>
+                            <option value="Male">Nam</option>
+                            <option value="Female">Nữ</option>
+                        </select>
+                        <div class="error" id="genderError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="dateOfBirth">Ngày sinh *</label>
+                        <input type="date" id="dateOfBirth" name="dateOfBirth" required />
+                        <div class="error" id="dateOfBirthError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="departmentId">Khoa *</label>
+                        <select id="departmentId" name="departmentId" required>
+                            <option value="">Chọn khoa</option>
+                        </select>
+                        <div class="error" id="departmentIdError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="address">Địa chỉ *</label>
+                    <input type="text" id="address" name="address" required />
+                    <div class="error" id="addressError"></div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="position">Chức vụ *</label>
+                        <input
+                            type="text"
+                            id="position"
+                            name="position"
+                            required
+                            placeholder="VD: Bác sĩ, Trưởng khoa, Phó khoa..."
+                            />
+                        <div class="error" id="positionError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="specialization">Chuyên khoa *</label>
+                        <input
+                            type="text"
+                            id="specialization"
+                            name="specialization"
+                            required
+                            placeholder="VD: Tim mạch, Nhi khoa, Ngoại khoa..."
+                            />
+                        <div class="error" id="specializationError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="degree">Bằng cấp *</label>
+                        <input
+                            type="text"
+                            id="degree"
+                            name="degree"
+                            required
+                            placeholder="VD: Thạc sĩ, Tiến sĩ, Bác sĩ CK1, CK2..."
+                            />
+                        <div class="error" id="degreeError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="education">Trường tốt nghiệp *</label>
+                        <input
+                            type="text"
+                            id="education"
+                            name="education"
+                            required
+                            placeholder="VD: Đại học Y Hà Nội"
+                            />
+                        <div class="error" id="educationError"></div>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="experienceYears">Số năm kinh nghiệm *</label>
+                        <input
+                            type="number"
+                            id="experienceYears"
+                            name="experienceYears"
+                            required
+                            min="0"
+                            max="50"
+                            />
+                        <div class="error" id="experienceYearsError"></div>
+                    </div>
+                    <div class="form-group">
+                        <label for="salary">Lương (VND) *</label>
+                        <input
+                            type="number"
+                            id="salary"
+                            name="salary"
+                            required
+                            min="0"
+                            step="1000"
+                            placeholder="VD: 15000000"
+                            />
+                        <div class="error" id="salaryError"></div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="experienceDetails">Chi tiết kinh nghiệm</label>
+                    <textarea
+                        id="experienceDetails"
+                        name="experienceDetails"
+                        placeholder="Mô tả chi tiết về kinh nghiệm làm việc..."
+                        ></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label for="description">Mô tả thêm</label>
+                    <textarea
+                        id="description"
+                        name="description"
+                        placeholder="Thông tin bổ sung về bác sĩ..."
+                        ></textarea>
+                </div>
+
+                <div class="modal-actions">
+                    <button
+                        type="button"
+                        class="btn btn-secondary"
+                        onclick="closeAddDoctorModal()"
+                        >
+                        Hủy
+                    </button>
+                    <button type="submit" class="btn btn-success">Thêm Bác sĩ</button>
+                </div>
+            </form>
+        </div>
+
+        <script>
+            let editingInModal = false;
+            let selectedDoctor = null;
+            let doctors = [];
+            let departments = [];
+            let currentPage = 1;
+            const rowsPerPage = 5;
+            let editingUserId = null;
+
+            const getVal = (id) => document.getElementById(id)?.value?.trim() || "";
+
+            async function fetchData() {
+                try {
+                    const [doctorRes, departmentRes] = await Promise.all([
+                        fetch("http://localhost:9999/EHospital/admin/doctor-api"),
+                        fetch("http://localhost:9999/EHospital/admin/department-api"),
+                    ]);
+
+                    if (!doctorRes.ok || !departmentRes.ok) {
+                        throw new Error("Network response was not ok");
+                    }
+
+                    const doctorJson = await doctorRes.json();
+                    const departmentJson = await departmentRes.json();
+
+                    if (doctorJson.success && departmentJson.success) {
+                        doctors = doctorJson.data;
+                        departments = departmentJson.data;
+
+                        populateDepartmentFilter();
+                        populateAddDoctorDepartments();
+                        renderTable();
+                    } else {
+                        throw new Error("API response indicates failure");
+                    }
+                } catch (error) {
+                    console.error("Lỗi khi tải dữ liệu:", error);
+                    alert(
+                            "Không thể tải dữ liệu. Vui lòng kiểm tra kết nối mạng và thử lại."
+                            );
+                }
+            }
+
+            function populateDepartmentFilter() {
+                const select = document.getElementById("departmentFilter");
+                select.innerHTML = '<option value="">Tất cả khoa</option>';
+                departments.forEach((dep) => {
+                    const opt = document.createElement("option");
+                    opt.value = dep.departmentId;
+                    opt.textContent = dep.departmentName;
+                    select.appendChild(opt);
+                });
+            }
+
+            function populateAddDoctorDepartments() {
+                const select = document.getElementById("departmentId");
+                select.innerHTML = '<option value="">Chọn khoa</option>';
+                departments.forEach((dep) => {
+                    const opt = document.createElement("option");
+                    opt.value = dep.departmentId;
+                    opt.textContent = dep.departmentName;
+                    select.appendChild(opt);
+                });
+            }
+
+            function getDepartmentName(id) {
+                const dept = departments.find((d) => d.departmentId === id);
+                return dept ? dept.departmentName : "Không rõ";
+            }
+
+            function createDepartmentOptions(selectedId) {
+                let options = '<option value="">Chọn khoa</option>';
+                departments.forEach((dep) => {
+                    const selected = dep.departmentId == selectedId ? "selected" : "";
+                    options += `<option value="${dep.departmentId}" ${selected}>${dep.departmentName}</option>`;
+                });
+                return options;
+            }
+
+            function renderTable() {
+                const tbody = document.querySelector("#doctorTable tbody");
+                tbody.innerHTML = "";
+
+                const search = document
+                        .getElementById("searchInput")
+                        .value.toLowerCase();
+                const selectedDept = document.getElementById("departmentFilter").value;
+                const selectedStatus = document.getElementById("statusFilter").value;
+
+                const filtered = doctors.filter((doc) => {
+                    const matchSearch =
+                            doc.fullName.toLowerCase().includes(search) ||
+                            doc.email.toLowerCase().includes(search);
+                    const matchDept =
+                            selectedDept === "" || doc.employee.departmentId == selectedDept;
+                    const matchStatus =
+                            selectedStatus === "" || doc.isActive.toString() === selectedStatus;
+                    return matchSearch && matchDept && matchStatus;
+                });
+
+                const start = (currentPage - 1) * rowsPerPage;
+                const end = start + rowsPerPage;
+                const paginated = filtered.slice(start, end);
+
+                paginated.forEach((doc) => {
+                    const tr = document.createElement("tr");
+                    const isEditing = editingUserId === doc.userId;
+
+                    if (isEditing) {
+                        tr.classList.add("editing-row");
+                        tr.innerHTML = createEditRow(doc);
+                    } else {
+                        tr.innerHTML = createViewRow(doc);
+                    }
+                    tbody.appendChild(tr);
+                });
+
+                renderPagination(filtered.length);
+            }
+
+            function createViewRow(doc) {
+                const statusClass = doc.isActive ? "status-active" : "status-inactive";
+                const statusText = doc.isActive ? "Hoạt động" : "Không hoạt động";
+
+                return `
+              <td>${doc.fullName}</td>
+              <td>${doc.employee.position}</td>
+              <td>${getDepartmentName(doc.employee.departmentId)}</td>
+              <td>${doc.email}</td>
+              <td>${doc.phone}</td>
+              <td><span class="${statusClass}">${statusText}</span></td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-sm" onclick='showDetails(${
+                        doc.userId
+                        })'>Xem</button>
+                  <button class="btn btn-warning btn-sm" onclick='startEdit(${
+                        doc.userId
+                        })'>Sửa</button>
+                </div>
+              </td>
+            `;
+            }
+
+            function createEditRow(doc) {
+                return `
+              <td><input type="text" class="edit-input" value="${
+                        doc.fullName
+                        }" data-field="fullName"></td>
+              <td><input type="text" class="edit-input" value="${
+                        doc.employee.position
+                        }" data-field="employee.position"></td>
+              <td>
+                <select class="edit-select" data-field="employee.departmentId">
+                  ${createDepartmentOptions(doc.employee.departmentId)}
+                </select>
+              </td>
+              <td><input type="email" class="edit-input" value="${
+                        doc.email
+                        }" data-field="email"></td>
+              <td><input type="tel" class="edit-input" value="${
+                        doc.phone
+                        }" data-field="phone"></td>
+              <td>
+                <label class="switch">
+                  <input type="checkbox" ${
+                        doc.isActive ? "checked" : ""
+                        } data-field="isActive">
+                  <span class="slider"></span>
+                </label>
+              </td>
+              <td>
+                <div class="action-buttons">
+                  <button class="btn btn-success btn-sm" onclick='saveEdit(${
+                        doc.userId
+                        })'>Lưu</button>
+                  <button class="btn btn-secondary btn-sm" onclick='cancelEdit()'>Hủy</button>
+                </div>
+              </td>
+            `;
+            }
+
+            function startEdit(userId) {
+                if (editingUserId !== null) {
+                    alert(
+                            "Vui lòng hoàn thành việc chỉnh sửa hiện tại trước khi chỉnh sửa bác sĩ khác."
+                            );
+                    return;
+                }
+                editingUserId = userId;
+                renderTable();
+            }
+
+            function cancelEdit() {
+                editingUserId = null;
+                renderTable();
+            }
+
+            async function saveEdit(userId) {
+                const doc = doctors.find((d) => d.userId === userId);
+                if (!doc)
+                    return;
+
+                const row = document.querySelector(`tr.editing-row`);
+
+                // Validate trước khi lưu
+                if (!validateEditFields(row)) {
+                    alert('Vui lòng điền đầy đủ thông tin và sửa các lỗi đã được đánh dấu.');
+                    return;
+                }
+
+                const inputs = row.querySelectorAll(
+                        '.edit-input, .edit-select, input[type="checkbox"]'
+                        );
+
+                const updatedData = {
+                    userId: doc.userId,
+                    username: doc.username,
+                    passwordHash: doc.passwordHash,
+                    fullName: doc.fullName,
+                    email: doc.email,
+                    phone: doc.phone,
+                    roleId: doc.roleId,
+                    isActive: doc.isActive,
+                    employee: {
+                        userId: doc.employee.userId,
+                        employeeCode: doc.employee.employeeCode,
+                        gender: doc.employee.gender,
+                        dateOfBirth: doc.employee.dateOfBirth,
+                        address: doc.employee.address,
+                        departmentId: doc.employee.departmentId,
+                        position: doc.employee.position,
+                        specialization: doc.employee.specialization,
+                        education: doc.employee.education,
+                        degree: doc.employee.degree,
+                        experienceYears: doc.employee.experienceYears,
+                        experienceDetails: doc.employee.experienceDetails,
+                        hireDate: doc.employee.hireDate,
+                        isActive: doc.employee.isActive,
+                        description: doc.employee.description,
+                        salary: doc.employee.salary,
+                    },
+                };
+
+                // Update values from inputs
+                inputs.forEach((input) => {
+                    const field = input.getAttribute("data-field");
+                    let value = input.type === "checkbox" ? input.checked : input.value.trim();
+
+                    if (field.startsWith("employee.")) {
+                        const empField = field.replace("employee.", "");
+                        if (empField === "departmentId") {
+                            updatedData.employee[empField] = parseInt(value);
+                        } else {
+                            updatedData.employee[empField] = value;
+                        }
+                    } else {
+                        updatedData[field] = value;
+                    }
+                });
+
+                try {
+                    // Format ngày sinh và ngày nhận việc về định dạng ISO yyyy-MM-dd
+                    if (updatedData.employee.dateOfBirth) {
+                        updatedData.employee.dateOfBirth = formatDateToISO(
+                                updatedData.employee.dateOfBirth
+                                );
+                    }
+                    if (updatedData.employee.hireDate) {
+                        updatedData.employee.hireDate = formatDateToISO(
+                                updatedData.employee.hireDate
+                                );
+                    }
+
+                    const response = await fetch(
+                            "http://localhost:9999/EHospital/admin/doctor-api",
+                            {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(updatedData),
+                            }
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        alert("Cập nhật thông tin bác sĩ thành công!");
+                        editingUserId = null;
+                        fetchData(); // Reload data
+                    } else {
+                        throw new Error(result.message || "Có lỗi xảy ra khi cập nhật");
+                    }
+                } catch (error) {
+                    console.error("Error updating doctor:", error);
+                    alert("Có lỗi xảy ra: " + error.message);
+                }
+            }
+
+            function renderPagination(totalRows) {
+                const totalPages = Math.ceil(totalRows / rowsPerPage);
+                const pagination = document.getElementById("pagination");
+                pagination.innerHTML = "";
+
+                for (let i = 1; i <= totalPages; i++) {
+                    const btn = document.createElement("button");
+                    btn.textContent = i;
+                    if (i === currentPage)
+                        btn.classList.add("active");
+                    btn.onclick = () => {
+                        currentPage = i;
+                        renderTable();
+                    };
+                    pagination.appendChild(btn);
+                }
+            }
+
+            function showDetails(userId) {
+                selectedDoctor = doctors.find((d) => d.userId === userId);
+                if (!selectedDoctor)
+                    return;
+
+                editingInModal = false;
+                renderDetailContent();
+                showModal("detailModal");
+            }
+
+            function formatDateToISO(dateStr) {
+                if (!dateStr)
+                    return "";
+
+                const d = new Date(dateStr);
+                if (isNaN(d.getTime()))
+                    return "";
+
+                const year = d.getFullYear();
+                const month = String(d.getMonth() + 1).padStart(2, "0");
+                const day = String(d.getDate()).padStart(2, "0");
+
+                return `${year}-${month}-${day}`;
+            }
+
+            function renderDetailContent() {
+                const doc = selectedDoctor;
+                if (!doc)
+                    return;
+
+                // Định dạng ngày yyyy-MM-dd từ dữ liệu gốc
+                const formatDate = (dateStr) => {
+                    if (!dateStr)
+                        return "";
+                    const d = new Date(dateStr);
+                    if (isNaN(d.getTime()))
+                        return "";
+
+                    const year = d.getFullYear();
+                    const month = String(d.getMonth() + 1).padStart(2, "0");
+                    const day = String(d.getDate()).padStart(2, "0");
+                    return `${year}-${month}-${day}`;
+                };
+
+                const inputOrText = (label, value, id, type = "text") =>
+                    editingInModal
+                            ? `<div class="form-group"><label>${label}</label><input type="${type}" class="form-control" id="${id}" value="${
+                            type === "date" ? formatDate(value) : value
+                            }" /></div>`
+                            : `<div class="detail-row"><strong>${label}:</strong> ${
+                            type === "date" ? formatDate(value) : value
+                            }</div>`;
+
+                document.getElementById("detailContent").innerHTML = `
+        ${inputOrText("Họ tên", doc.fullName, "editFullName")}
+        ${inputOrText("Email", doc.email, "editEmail", "email")}
+        ${inputOrText("Số điện thoại", doc.phone, "editPhone", "tel")}
+        ${inputOrText("Chức vụ", doc.employee.position, "editPosition")}
+        ${inputOrText(
+                        "Chuyên khoa",
+                        doc.employee.specialization,
+                        "editSpecialization"
+                        )}
+        ${inputOrText("Bằng cấp", doc.employee.degree, "editDegree")}
+        ${inputOrText("Trường tốt nghiệp", doc.employee.education, "editEducation")}
+        ${inputOrText(
+                        "Số năm kinh nghiệm",
+                        doc.employee.experienceYears,
+                        "editExp",
+                        "number"
+                        )}
+        ${inputOrText("Địa chỉ", doc.employee.address, "editAddress")}
+        ${inputOrText(
+                        "Ngày sinh",
+                        doc.employee.dateOfBirth,
+                        "editDateOfBirth",
+                        "date"
+                        )}
+      `;
+            }
+
+            function enableEditInModal() {
+                editingInModal = true;
+                renderDetailContent();
+                document.getElementById("saveBtn").style.display = "inline-block";
+            }
+
+            function validateModalFields() {
+                let isValid = true;
+                const requiredFields = [
+                    {id: 'editFullName', name: 'Họ tên'},
+                    {id: 'editEmail', name: 'Email'},
+                    {id: 'editPhone', name: 'Số điện thoại'},
+                    {id: 'editPosition', name: 'Chức vụ'},
+                    {id: 'editSpecialization', name: 'Chuyên khoa'},
+                    {id: 'editDegree', name: 'Bằng cấp'},
+                    {id: 'editEducation', name: 'Trường tốt nghiệp'},
+                    {id: 'editAddress', name: 'Địa chỉ'}
+                ];
+
+                requiredFields.forEach(field => {
+                    const element = document.getElementById(field.id);
+                    if (element && !element.value.trim()) {
+                        alert(`${field.name} không được để trống`);
+                        element.focus();
+                        isValid = false;
+                        return false; // Break out of forEach
+                    }
+                });
+
+                // Validate email
+                const emailField = document.getElementById('editEmail');
+                if (emailField && emailField.value.trim()) {
+                    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                    if (!emailRegex.test(emailField.value.trim())) {
+                        alert('Email không hợp lệ');
+                        emailField.focus();
+                        isValid = false;
+                    }
+                }
+
+                // Validate phone
+                const phoneField = document.getElementById('editPhone');
+                if (phoneField && phoneField.value.trim()) {
+                    const phoneRegex = /^[0-9]{10,11}$/;
+                    if (!phoneRegex.test(phoneField.value.trim())) {
+                        alert('Số điện thoại phải có 10-11 chữ số');
+                        phoneField.focus();
+                        isValid = false;
+                    }
+                }
+
+                return isValid;
+            }
+
+            async function saveEditFromModal() {
+                if (!selectedDoctor)
+                    return;
+                if (!validateModalFields()) {
+                    return;
+                }
+                const getVal = (id) => document.getElementById(id)?.value?.trim() || "";
+
+                selectedDoctor.fullName = getVal("editFullName");
+                selectedDoctor.email = getVal("editEmail");
+                selectedDoctor.phone = getVal("editPhone");
+                selectedDoctor.employee.position = getVal("editPosition");
+                selectedDoctor.employee.specialization = getVal("editSpecialization");
+                selectedDoctor.employee.degree = getVal("editDegree");
+                selectedDoctor.employee.education = getVal("editEducation");
+                selectedDoctor.employee.experienceYears =
+                        parseInt(getVal("editExp")) || 0;
+                selectedDoctor.employee.address = getVal("editAddress");
+
+                // Format tất cả các trường date để đảm bảo định dạng đúng
+                const dobValue = getVal("editDateOfBirth");
+                if (dobValue) {
+                    selectedDoctor.employee.dateOfBirth = dobValue; // Input date đã ở định dạng yyyy-mm-dd
+                } else {
+                    // Format lại dateOfBirth hiện tại nếu không có giá trị mới
+                    selectedDoctor.employee.dateOfBirth = formatDateToISO(
+                            selectedDoctor.employee.dateOfBirth
+                            );
+                }
+
+                // Format hireDate
+                selectedDoctor.employee.hireDate = formatDateToISO(
+                        selectedDoctor.employee.hireDate
+                        );
+
+                try {
+                    const response = await fetch(
+                            "http://localhost:9999/EHospital/admin/doctor-api",
+                            {
+                                method: "PUT",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(selectedDoctor),
+                            }
+                    );
+
+                    const result = await response.json();
+                    if (response.ok && result.success) {
+                        alert("Cập nhật thông tin thành công!");
+                        editingInModal = false;
+                        document.getElementById("saveBtn").style.display = "none";
+                        closeModal();
+                        fetchData();
+                    } else {
+                        throw new Error(result.message || "Lỗi khi cập nhật");
+                    }
+                } catch (error) {
+                    alert("Có lỗi xảy ra: " + error.message);
+                }
+            }
+
+            function showAddDoctorModal() {
+                document.getElementById("addDoctorForm").reset();
+                clearErrors();
+                showModal("addDoctorModal");
+            }
+
+            function showModal(modalId) {
+                document.getElementById("overlay").style.display = "block";
+                document.getElementById(modalId).style.display = "block";
+            }
+
+            function closeModal() {
+                document.getElementById("overlay").style.display = "none";
+                document.getElementById("detailModal").style.display = "none";
+            }
+
+            function closeAddDoctorModal() {
+                document.getElementById("overlay").style.display = "none";
+                document.getElementById("addDoctorModal").style.display = "none";
+            }
+
+            function clearErrors() {
+                const errorElements = document.querySelectorAll(".error");
+                errorElements.forEach((el) => (el.textContent = ""));
+            }
+
+            function showError(fieldName, message) {
+                const errorElement = document.getElementById(fieldName + "Error");
+                if (errorElement) {
+                    errorElement.textContent = message;
+                }
+            }
+
+            function validateForm(formData) {
+                clearErrors();
+                let isValid = true;
+
+                // Validate required fields
+                const requiredFields = [
+                    "username",
+                    "password",
+                    "fullName",
+                    "email",
+                    "phone",
+                    "gender",
+                    "dateOfBirth",
+                    "departmentId",
+                    "address",
+                    "position",
+                    "specialization",
+                    "degree",
+                    "education",
+                    "experienceYears",
+                    "salary",
+                ];
+
+                requiredFields.forEach((field) => {
+                    if (!formData[field] || formData[field].toString().trim() === "") {
+                        showError(field, "Trường này là bắt buộc");
+                        isValid = false;
+                    }
+                });
+
+                // Validate email format
+                const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                if (formData.email && !emailRegex.test(formData.email)) {
+                    showError("email", "Email không hợp lệ");
+                    isValid = false;
+                }
+
+                // Validate phone format
+                const phoneRegex = /^[0-9]{10,11}$/;
+                if (formData.phone && !phoneRegex.test(formData.phone)) {
+                    showError("phone", "Số điện thoại phải có 10-11 chữ số");
+                    isValid = false;
+                }
+
+                // Validate password length
+                if (formData.password && formData.password.length < 6) {
+                    showError("password", "Mật khẩu phải có ít nhất 6 ký tự");
+                    isValid = false;
+                }
+
+                // Validate age (must be at least 22 years old)
+                if (formData.dateOfBirth) {
+                    const birthDate = new Date(formData.dateOfBirth);
+                    const today = new Date();
+                    const age = today.getFullYear() - birthDate.getFullYear();
+                    if (age < 22) {
+                        showError("dateOfBirth", "Bác sĩ phải có ít nhất 22 tuổi");
+                        isValid = false;
+                    }
+                }
+
+                // Validate experience years
+                if (
+                        formData.experienceYears &&
+                        (formData.experienceYears < 0 || formData.experienceYears > 50)
+                        ) {
+                    showError("experienceYears", "Số năm kinh nghiệm phải từ 0 đến 50");
+                    isValid = false;
+                }
+
+                // Validate salary
+                if (formData.salary && formData.salary < 0) {
+                    showError("salary", "Lương phải là số dương");
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function validateEditFields(row) {
+                // Xóa các lỗi cũ
+                row.querySelectorAll('.edit-error').forEach(error => error.remove());
+                row.querySelectorAll('.error-field').forEach(field => {
+                    field.classList.remove('error-field');
+                });
+
+                let isValid = true;
+                const errors = [];
+
+                // Validate các trường input text
+                const textInputs = row.querySelectorAll('.edit-input[type="text"], .edit-input[type="email"], .edit-input[type="tel"]');
+                textInputs.forEach(input => {
+                    const value = input.value.trim();
+                    const field = input.getAttribute('data-field');
+
+                    if (!value) {
+                        showEditError(input, 'Trường này không được để trống');
+                        isValid = false;
+                    } else if (field === 'email') {
+                        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+                        if (!emailRegex.test(value)) {
+                            showEditError(input, 'Email không hợp lệ');
+                            isValid = false;
+                        }
+                    } else if (field === 'phone') {
+                        const phoneRegex = /^[0-9]{10,11}$/;
+                        if (!phoneRegex.test(value)) {
+                            showEditError(input, 'Số điện thoại phải có 10-11 chữ số');
+                            isValid = false;
+                        }
+                    }
+                });
+
+                // Validate select (department)
+                const select = row.querySelector('.edit-select');
+                if (select && !select.value) {
+                    showEditError(select, 'Vui lòng chọn khoa');
+                    isValid = false;
+                }
+
+                return isValid;
+            }
+
+            function showEditError(inputElement, message) {
+                inputElement.classList.add('error-field');
+
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'edit-error';
+                errorDiv.textContent = message;
+
+                inputElement.parentNode.appendChild(errorDiv);
+            }
+            async function submitAddDoctor(formData) {
+                const doctorData = {
+                    username: formData.username,
+                    passwordHash: formData.password, // In production, this should be hashed on the server
+                    fullName: formData.fullName,
+                    email: formData.email,
+                    phone: formData.phone,
+                    roleId: 2, // Doctor role
+                    isActive: true,
+                    employee: {
+                        employeeCode: generateEmployeeCode(),
+                        gender: formData.gender,
+                        dateOfBirth: formData.dateOfBirth,
+                        address: formData.address,
+                        departmentId: parseInt(formData.departmentId),
+                        position: formData.position,
+                        specialization: formData.specialization,
+                        education: formData.education,
+                        degree: formData.degree,
+                        experienceYears: parseInt(formData.experienceYears),
+                        experienceDetails: formData.experienceDetails || "",
+                        salary: parseFloat(formData.salary),
+                        description: formData.description || "",
+                        isActive: true,
+                    },
+                };
+
+                try {
+                    console.log(JSON.stringify(doctorData));
+                    const response = await fetch(
+                            "http://localhost:9999/EHospital/admin/doctor-api",
+                            {
+                                method: "POST",
+                                headers: {
+                                    "Content-Type": "application/json",
+                                },
+                                body: JSON.stringify(doctorData),
+                            }
+                    );
+
+                    const result = await response.json();
+
+                    if (response.ok && result.success) {
+                        alert("Thêm bác sĩ thành công!");
+                        closeAddDoctorModal();
+                        fetchData(); // Reload the data
+                    } else {
+                        throw new Error(result.message || "Có lỗi xảy ra khi thêm bác sĩ");
+                    }
+                } catch (error) {
+                    console.error("Error adding doctor:", error);
+                    alert("Có lỗi xảy ra: " + error.message);
+                }
+            }
+
+            function generateEmployeeCode() {
+                const timestamp = Date.now().toString().slice(-6);
+                return "DOC" + timestamp;
+            }
+
+            // Event Listeners
+            document
+                    .getElementById("addDoctorForm")
+                    .addEventListener("submit", async function (e) {
+                        e.preventDefault();
+
+                        const formData = new FormData(this);
+                        const data = Object.fromEntries(formData.entries());
+
+                        if (validateForm(data)) {
+                            const loadingEl = document.getElementById("addDoctorLoading");
+                            const formEl = document.getElementById("addDoctorForm");
+
+                            // Show loading state
+                            loadingEl.style.display = "block";
+                            formEl.style.display = "none";
+
+                            try {
+                                await submitAddDoctor(data);
+                            } finally {
+                                // Hide loading state
+                                loadingEl.style.display = "none";
+                                formEl.style.display = "block";
+                            }
+                        }
+                    });
+
+            // Close modal when clicking overlay
+            document.getElementById("overlay").addEventListener("click", function () {
+                closeModal();
+                closeAddDoctorModal();
+            });
+
+            document.getElementById("searchInput").addEventListener("input", () => {
+                currentPage = 1;
+                renderTable();
+            });
+
+            document
+                    .getElementById("departmentFilter")
+                    .addEventListener("change", () => {
+                        currentPage = 1;
+                        renderTable();
+                    });
+
+            document.getElementById("statusFilter").addEventListener("change", () => {
+                currentPage = 1;
+                renderTable();
+            });
+
+            // Initialize data
+            fetchData();
+        </script>
+    </body>
+</html>
