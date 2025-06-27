@@ -16,7 +16,7 @@ public class ChangePasswordController extends HttpServlet {
     private static final String ERROR = "./client/error.jsp";
     private static final String SUCCESS = "./client/change-password.jsp";
     private static final String LOGIN = "./client/login.jsp";
-    
+
     protected void processRequest(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         response.setContentType("text/html;charset=UTF-8");
@@ -34,25 +34,29 @@ public class ChangePasswordController extends HttpServlet {
                     String oldPassword = request.getParameter("oldPassword");
                     String newPassword = request.getParameter("newPassword");
                     String confirmPassword = request.getParameter("confirmPassword");
-
+                    
                     UserDAO userDAO = new UserDAO();
-
+                    
                     // Validate old password
                     if (!userDAO.checkPassword(loginUser.getUserId(), oldPassword)) {
                         request.setAttribute("ERROR", "Current password is incorrect!");
                         url = SUCCESS;
-                    } // Validate new password
+                    } 
+                    // Validate new password
                     else if (!newPassword.equals(confirmPassword)) {
                         request.setAttribute("ERROR", "New password and confirm password do not match!");
                         url = SUCCESS;
-                    } // Validate password length
+                    }
+                    else if (oldPassword.equals(newPassword)) {
+                        request.setAttribute("ERROR", "New password cannot be the same as the current password!");
+                        url = SUCCESS;
+                    }
+                    // Validate password length
                     else if (newPassword.length() < 6) {
                         request.setAttribute("ERROR", "New password must be at least 6 characters long!");
                         url = SUCCESS;
-                    } else if (oldPassword.equals(newPassword)) {
-                        request.setAttribute("ERROR", "New password cannot be the same as the current password!");
-                        url = SUCCESS;
-                    } // Change password
+                    }
+                    // Change password
                     else {
                         boolean check = userDAO.changePassword(loginUser.getUserId(), newPassword);
                         if (check) {
@@ -87,4 +91,4 @@ public class ChangePasswordController extends HttpServlet {
     public String getServletInfo() {
         return "Short description";
     }
-}
+} 
